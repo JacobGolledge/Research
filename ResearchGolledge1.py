@@ -5,7 +5,8 @@ import csv
 abscissa = []
 ordinate = []
 
-with open('/home/jacob/Downloads/data.v3.txt', 'r') as datafile:
+#with open('/home/jacob/Downloads/Research/data.v3.txt', 'r') as datafile:
+with open('/Users/grudnick/Work/UGresearch/Fall2019/Golledge/Repo/Research/data.v3.txt', 'r') as datafile:
 	plots = csv.reader(datafile)
 	firstline = datafile.readline()
 	for line in datafile:
