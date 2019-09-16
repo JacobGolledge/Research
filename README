@@ -1,0 +1,196 @@
+===============
+README
+General information about the photometry products for the 12 GOGREEN clusters. At the moment of the v1.0 release (January 2019) there are 6 clusters (all the ones in the South) with usuable catalogues. I have now (June 3rd 2019) included 5 Northern clusters (all except for SpARCS-1033 for which the photometric data set is not sufficient).
+This file will be updated continuously as more products become available. 
+Please read this before using the images and catalogues.
+Bug fixes are listed at the very bottom of this file. 
+
+Acknowledgement:
+Many others contributed also to this work, in particular: Adam, Chris, David, Heath, Greg, Lyndsay, Stephen Gwyn. Julie provided the FORS2 catalogue of CDFS41.
+
+===============
+IMAGES
+All images are resampled to 3000x3000 pixels with pixel scale 0.200"/pix in the center (~ 10' on a side). All filters are aligned in x and y.
+
+As absolute calibration I assumed the J-band zero point provided by Chris, which was calibrated w.r.t. 2MASS. Further photometric calibration was done based on the universality of the stellar locus. I have used different libraries of stellar spectra to construct a reference against which to calibrate the photometry. The main ones used in this work are Pickles+98 extended with Ivanov+04 in the Near-IR, and Kelly+14 which use SDSS spectroscopy and are therefore superior in the optical range compared to Pickles+98. The file MAGZPs_cal.list contains a list of all MAGZPs (in AB system). 
+*UPDATE AUGUST 8 2018* Combining Pickles/Ivanov/Kelly as stellar spectral library resulted in a slightly better photometric calibration. All files (also the previous 5 clusters) have been modified. The old files can be found in the v0.3_old/ folders. 
+
+For each cluster there are regular stacks, seeing-homogenised stacks (for aperture photometry), and (inverse-variance) weight maps.
+For each of the clusters, and each of the filters, there are 3 files:
+-stack
+-weight image
+-stack with homogenized PSF (*psf_*). These are convolved with a kernel to give them Moffat-shaped PSFs with Beta-parameter of 3.0. Sizes [FWHM in arcsec] are in IMAGES/psfsize_target.dat
+There is a second set of psf-homogenized images *psf2_*, for the Ks-band and the IRAC images. Sizes [FWHM in arcsec] are in IMAGES/psfsize_target_psf2.dat 
+
+Manual mask images for masks that are science-ready (quite agressive masking, requiring that photometry in each of the filters is available):
+IMAGES/MANMASKS/
+0=mask, 1=out of mask
+
+
+===============
+PHOTOM_CATS
+Ks-band selected catalogs where each detected object is required to have 5 adjacent pixels with at least 1.5 sigma in the original (unconvolved) Ks-band image.
+All flux values have an AB magnitude zeropoint of 25 (equivalent to a flux scale of 0.3631 uJy per count). Therefore m_filter = -2.5*log10(flux_filter) + 25.
+
+id - identifier which indicates the same object in the other catalogues.
+ra/dec - calibrated with sdss dr7 or usno-b whenever a clusters falls outside of the sdss footprint
+x/y - position on the image stacks, this is by construction the same for each filter.
+Ks_tot - FLUX_AUTO in the Ks-band. K_Kron gives the kron radius in pixels. 
+K_flag - SExtractor flag in the K-band
+K_star - SExtractor CLASS_STAR parameter in K-band
+K_fluxrad - SExtractor half-light radius in K-band (r50, still including PSF)
+totmask - manual mask at position of detection. 1=mask, 0= out of mask.
+Following is a series of aperture flux measurements in the different bands:
+u through K - Aperture fluxes (PSF matched, circular aperture with 2'' diameter). Different filter tags represent different instruments and filter sets.
+eu through eK - error estimates from background noise, on the source location in the aperture 
+
+Note: Aperture fluxes assume that the sole source of uncertainty is the background RMS. It therefore depends on position on the stack (as the depth is not necessarily uniform), but does not depend on the source flux.
+
+IRAC aperture fluxes have been measured in a two-step process, similar to the description in Appendix A of vdBurg+13. Essentially:
+
+IRAC_cat=IRAC_psf2,3'' X (Ks_psf,2'' / Ks_psf2,3'' ), where:
+${filter}_psf,app'' is the aperture flux measured on the homogenized stack (psf or psf2 denoting the small or large PSF, respectively) of filter ${filter}, in an aperture with diameter of app arcseconds (app is either 2'' or 3''). This is so that we do not have to convolve all photometry to the big IRAC PSF.
+
+===============
+PHOTOZ_CATS
+ID-matched to the main photometric catalogue.
+photoz-cats using EAZY code. (extension .zout)
+id - same identifier as PHOTOM_CAT
+z_peak - probably best estimate for photo-z
+NOTE that I find these z_peak redshift to be an underestimate to the spec-z's by about 9%. So the best redshift estimate based on the photometry would actually be 1.09*z_peak. 
+*UPDATE June 2 2019: I have now fitted a quadratic function between former z_peak and z_spec, independently for the Northern and Southern clusters, to get rid of the systematics. The resulting photo-z's are in the *zphot.dat files. 
+
+===============
+RESTFRAME COLOURS
+*UPDATE June 2 2019: Now including almost the full rest-frame SEDs: FUV NUV U B V R I Z J
+*UPDATE JANUARY 14 2019: Format changed completely. Now FUV, NUV, U, B, V, J are listed in arbitrary flux units, as measured with EAZY. From here colours can be made as usual, e.g. U-V=-2.5*log10(UFLUX/VFLUX). In addition, U-V and V-J colours are directly given. 
+Two sets of files are given, based in different redshift assumptions before fluxes/colours are measured:
+The standard files assume the cluster mean redshift for each source. The other files (ending with _indivredshifts) are based on the individually-measured spectroscopic redshifts, or, if there is no spec-z measured, the peak of the posterior P(z). The assumed redshifts are also in the second column of each file.
+
+===============
+SPECZ_MATCHED
+ID-matched to the main photometric catalogue.
+Simple shifts to bring catalogue to same astrometric reference as photometric catalogue.
+Matching was done within 1.0'', with priority:
+1- GOGREEN
+2- GCLASS 
+3- SPT
+4- FORS2 catalogue from Julie for CDFS41 (SpARCS-0335)
+*UPDATE JANUARY 8 2019:
+5- VIPERS
+6- PRIMUS
+7- SDSS (added in version June 3rd 2019)
+8- NED general search for spectroscopic redshifts (excluding SDSS)
+When there are two (or more) matches to spectroscopic catalogues, the second match is also reported (following the same priority list).
+To help cross-matching with GOGREEN spectra, the spectroscopic GOGREEN ID (*UPDATED JANUARY 14 2019) is reported in the last column.
+
+===============
+STELMASS_CATS
+ID-matched to the main photometric catalogue.
+Stellar masses and other SED-fitting parameters from FAST. 
+There are two versions:
+*Ks.fout takes the z_peak from the photo-z catalogue, or the spectroscopic redshift when available.
+*Ks_fixz.fout fixes the redshift of all objects to the cluster mean redshift. This may come in handy when performing a statistical background subtraction.
+
+All relevant parameters for the grid of template models are listed in the header of the files.
+
+===============
+BESTFIT_SEDs
+*Update June 6th 2019*
+Best fitting SED models to the photometry based on the BC03 library and the best spectroscopic redshift for each source. Includes aperture correction to MAG_AUTO (Kron-like magnitude). Two folders: 
+-specz_targets takes the spectroscopic redshift as a basis; these may be useful to flux-calibrate the spectroscopy. NOTE: Photometric IDs have to be matched to spectroscopic ones using the files in the SPECZ_MATCHED folder.
+-"all" folder includes all Ks-band detections (for which enough filters are available to measure a meaningful SED). They are compressed in tar files of two flavours. One is using individual redshifts (spec-z or else best photo-z), the second is using redshifts fixed to the cluster mean redshift.
+
+===============
+COLORIMS (only for South so far)
+RGB colour images of the five clusters. 
+
+I used the formalism described by Lupton, Blanton, Fekete, Hogg et al. 2004
+This ensures that colours of bright objects look good (not completely white), while faint objects are also shown. This is done by using the asinh() rather than a completely linear function.
+
+The rgb channels are filled as follows:
+blue=B band
+green=I band
+red=Ks-band
+
+Spectroscopic targets are indicated in the _mark version of the files. Very simple division between green (within 0.02 of mean cluster redshift) and red (rest).
+
+===============
+IRAC
+Stacks of all IRAC data that are available: 
+-SWIRE: All SpARCS clusters. Shallow Ch1,2,3,4. 
+-SERVS: Deep ch1 and ch2 for SpARCS-0035, SpARCS-1051, SpARCS-0219 (partly)
+-GTO program: All channels super deep for SpARCS-0035, SpARCS-1616, SpARCS-1634, SpARCS-1638.
+-Individual programs from Brodwin, Menanteau, McGee. Mostly SPT clusters, and SpARCS clusters without SERVS or GTO data. Only Ch1 and Ch2.
+
+There were small astrometric offsets (typically 1'') between the stacks from different programs. These offsets have now been fixed with respect to USNO-B1, and all data from the different programs are stacked together.
+
+Stacks cover 10' on a side with a pixel scale of 0.2 arcsec/pix and have an AB magnitude zeropoint of 21.58 (8.4616 uJy).
+
+Weight images are standard inverse variance maps.
+
+===============
+AVERAGE DEPTHS
+5-sigma circular aperture (2'' diameter) magnitude depth:
+  SPTCL-0205         FOURSTARJ    24.2
+  SPTCL-0205        FOURSTARJ1    23.9
+  SPTCL-0205        FOURSTARKs    23.9
+  SPTCL-0205            VIMOSB    26.7
+  SPTCL-0205            VIMOSI    25.5
+  SPTCL-0205            VIMOSR    25.9
+  SPTCL-0205            VIMOSU    26.3
+  SPTCL-0205            VIMOSV    25.8
+  SPTCL-0205            VIMOSz    24.3
+  SPTCL-0546         FOURSTARJ    23.5
+  SPTCL-0546        FOURSTARJ1    23.8
+  SPTCL-0546        FOURSTARKs    23.4
+  SPTCL-0546            VIMOSB    26.1
+  SPTCL-0546            VIMOSI    25.0
+  SPTCL-0546            VIMOSR    25.7
+  SPTCL-0546            VIMOSU    25.4
+  SPTCL-0546            VIMOSV    25.3
+  SPTCL-0546            VIMOSz    23.8
+  SPTCL-2106         FOURSTARJ    24.0
+  SPTCL-2106        FOURSTARJ1    24.3
+  SPTCL-2106           HAWKIKs    23.5
+  SPTCL-2106            VIMOSB    26.4
+  SPTCL-2106            VIMOSI    25.3
+  SPTCL-2106            VIMOSR    25.8
+  SPTCL-2106            VIMOSU    26.0
+  SPTCL-2106            VIMOSV    26.0
+  SPTCL-2106            VIMOSz    24.6
+ SpARCS-0219         FOURSTARJ    24.0
+ SpARCS-0219        FOURSTARJ1    24.1
+ SpARCS-0219        FOURSTARKs    23.7
+ SpARCS-0219            VIMOSB    26.0
+ SpARCS-0219            VIMOSI    25.1
+ SpARCS-0219            VIMOSR    25.5
+ SpARCS-0219            VIMOSU    25.8
+ SpARCS-0219            VIMOSV    25.4
+ SpARCS-0219            VIMOSz    24.2
+ SpARCS-0335         FOURSTARJ    24.2
+ SpARCS-0335           HAWKIKs    23.6
+ SpARCS-0335            HAWKIY    25.2
+ SpARCS-0335            VIMOSB    26.5
+ SpARCS-0335            VIMOSI    25.5
+ SpARCS-0335            VIMOSR    26.3
+ SpARCS-0335            VIMOSU    26.3
+ SpARCS-0335            VIMOSV    25.9
+ SpARCS-0335            VIMOSz    24.6
+ SpARCS-0035            DECamz    25.5
+ SpARCS-0035        FOURSTARJ1    24.2
+ SpARCS-0035            HAWKIJ    24.9
+ SpARCS-0035           HAWKIKs    24.2
+ SpARCS-0035            VIMOSB    26.4
+ SpARCS-0035            VIMOSI    25.5
+ SpARCS-0035            VIMOSR    26.0
+ SpARCS-0035            VIMOSU    26.0
+ SpARCS-0035            VIMOSV    25.8
+
+
+
+===============
+If you have suggestions or encounter any problems, please let me know (rvanderb@eso.org). NOTE that the SXDF folder is not maintained by me.
+
+====BUG FIXES===========
+24 September 2018 - I noticed a problem in the FAST catalogues where the individual redshifts (photo-z or spec-z) for each galaxy were used. Since I updated the file with matches between photometric and spectroscopic catalogue, the wrong column was used and these files were useless. Please use the ones that were created after this date.
